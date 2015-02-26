@@ -3,9 +3,9 @@
 include_once 'api.php';
 //include_once 'livegame.php';
 //class representing a summoner and its data
-
 class summoner {
-    
+
+    private $responseCode;
     private $key;
     private $id;
     private $name;
@@ -13,12 +13,19 @@ class summoner {
     private $iconid;
     private $rev;
     private $json;
-    private $value;
-    
+    private $value;    
     private $regionid;
+
+	private static $errorCodes = array(0   => 'NO_RESPONSE',
+									   400 => 'BAD_REQUEST',
+									   401 => 'UNAUTHORIZED',
+									   404 => 'NOT_FOUND',
+									   429 => 'RATE_LIMIT_EXCEEDED',
+									   500 => 'SERVER_ERROR',
+									   503 => 'UNAVAILABLE');
     
     
-	public function __construct($summonerjson,$decoded = FALSE)
+	public function __construct($region,$summonerjson,$decoded = FALSE)
 	{
 	   if(!$decoded)
        {
@@ -30,7 +37,7 @@ class summoner {
             $this->json = $summonerjson;
        } 
       
-      	 list($key, $value) = each($this->json);
+  	    list($key, $value) = each($this->json);
     
         $this->id       = $value['id'];
         $this->name     = $value['name'];
@@ -38,6 +45,7 @@ class summoner {
         $this->iconid   = $value['profileIconId'];
         $this->rev      = $value['revisionDate'];
         
+        $api = new riotapi($region);
 	}
     
     public function getLiveGameData()
@@ -48,18 +56,20 @@ class summoner {
     	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         
-        if(curl_exec($ch) === false)
-        {
-            echo 'Curl error: ' . curl_error($ch);
-        }
-        else
+        curl_exec($ch);
+        $this->responseCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
+        if($this->responseCode == 200) 
         {
             $this->json = curl_exec($ch);
             $array = json_decode($this->json,true);
             return $array;
-        }        			
+        } 
+        else 
+        {
+            echo 'ERROR    :   <b>' . self::$errorCodes[$this->responseCode];
+        }	
     	curl_close($ch);
     }
     

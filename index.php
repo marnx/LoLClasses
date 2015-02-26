@@ -10,16 +10,16 @@
     }
     
     $region = "euw";
-    $username = "loulex"; 
+    $username = "Cinazu";
     
     //nieuw instantie van API in regia euw
     $api_eu = new riotapi($region);
-    $summoner = new summoner($api_eu->getSummonerByName($username) , true);
-   
-    $gamejson = $summoner->getLiveGameData();
-    echo var_dump($gamejson);
-    //$currentgame = new livegame($gamejson);
-
-    //$currentgame->printData();
     
+    $summoner = new summoner($region,$api_eu->getSummonerByName($username) , true);
+   
+   
+    echo $summoner->getId();
+    echo var_dump($summoner->getLiveGameData());
+    //$gamejson = $summoner->getLiveGameData();
+    //echo var_dump($api_eu->getSummonerByName($username));
 ?>
